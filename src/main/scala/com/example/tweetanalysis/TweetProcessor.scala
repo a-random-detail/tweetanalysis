@@ -10,6 +10,6 @@ trait TweetProcessor[F[_]] {
 
 object TweetProcessor {
   def impl[F[_]: Sync]: TweetProcessor[F] = new TweetProcessor[F] {
-    def analyze(s: Stream[F, Tweet]): Stream[F, String] = s.map{x => "tweet processor analysis output"}
+    def analyze(s: Stream[F, Tweet]): Stream[F, String] = s.map{x => "processed tweet"}
   }
 }
