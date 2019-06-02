@@ -47,6 +47,7 @@ class TWStream[F[_]](implicit F: ConcurrentEffect[F], cs: ContextShift[F]) {
     val processor = TweetProcessor.impl[F]
     val tweets = s.map(_.as[Tweet]).collect { case Right(x) => x }.take(15)
       processor.analyze(tweets)
+      .map(_.toString)
       .through(utf8Encode)
       .through(stdout(blockingEC))
 
