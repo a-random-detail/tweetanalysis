@@ -3,7 +3,7 @@ package com.example.tweetanalysis
 import cats.effect.{ExitCode, IO, IOApp}
 import cats.implicits._
 
-object Main extends IOApp {
+object TWStreamApp extends IOApp {
   def run(args: List[String]) =
-    TweetanalysisServer.stream[IO].compile.drain.as(ExitCode.Success)
+    (new TWStream[IO]).run.as(ExitCode.Success)
 }
