@@ -41,17 +41,25 @@ class TWStream[F[_]](implicit F: ConcurrentEffect[F], cs: ContextShift[F]) {
   def stream(blockingEC: ExecutionContext): Stream[F, Unit] = {
     val processor = TweetProcessor.impl[F]
     val req = Request[F](Method.GET, Uri.uri("https://stream.twitter.com/1.1/statuses/sample.json"))
-    val s   = jsonStream("2ijtWnTf0QTWIXdAk7iO5ttF6", "z3x375TZ1WubFGHx8iJrvgOsxWBQtDDBnvvDnmc8dBJ59x7BpX", "1133841180507234304-fcQzIoHTuvxxiAlbSGjiZMjMlwDEHn", "LszzxehNhW4Mu9EOMy8cLqKVBLyxKBy7p5rhVTV7sbMhp")(req)
+    def s   = jsonStream("2ijtWnTf0QTWIXdAk7iO5ttF6", "z3x375TZ1WubFGHx8iJrvgOsxWBQtDDBnvvDnmc8dBJ59x7BpX", "1133841180507234304-fcQzIoHTuvxxiAlbSGjiZMjMlwDEHn", "LszzxehNhW4Mu9EOMy8cLqKVBLyxKBy7p5rhVTV7sbMhp")(req)
 
-    val tweets = s.map(_.as[Tweet]).collect { case Right(x) => x }.take(15)
+    def tweets = s.map(_.as[Tweet]).collect { case Right(x) => x }.take(50)
       processor.analyze(tweets)
-      .map(_.toString)
+      .map(x => {
+        s"""
+        ---------------
+        total tweets: ${x.totalTweets}
+        tweets per:
+          second: ${x.tweetsPerSecond}
+          minute: ${x.tweetsPerMinute}
+          hour:   ${x.tweetsPerHour}
+        top hashtags: ${x.topHashtags.keys.toList}
+        ---------------
+        """
+      })
       .through(utf8Encode)
       .through(stdout(blockingEC))
-
-
-
-  }
+    }
 
   /**
    * We're going to be writing to stdout, which is a blocking API.  We don't

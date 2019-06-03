@@ -15,14 +15,13 @@ object TweetProcessor {
   def impl[F[_]: Sync]: TweetProcessor[F] = new TweetProcessor[F] {
     val startTime = LocalTime.now()
     def analyze(s: Stream[F, Tweet]): Stream[F, AnalysisResult] = {
-      val count = s.scan(0)((acc,_) => acc+1).drop(1)
-      val perSecondStream = count.map(_.toDouble / timeDeltaSeconds)
-      val topHashtags = s.map(_.entities.hashtags)
+      def count = s.scan(0)((acc,_) => acc+1).drop(1)
+      def perSecondStream = count.map(_.toDouble / timeDeltaSeconds)
+      def topHashtags = s.map(_.entities.hashtags)
         .scan(Map[Hashtag, Int]())((acc, next) => acc.combine(next.groupBy(i=>i).mapValues(_.size)))
         .drop(1)
-      val tweetCounts = count.zipWith(perSecondStream)((a,b) => (a,b, b*60, b*60*60))
+      def tweetCounts = count.zipWith(perSecondStream)((a,b) => (a,b, b*60, b*60*60))
       tweetCounts.zipWith(topHashtags)((a,b) => AnalysisResult(a._1, a._2, a._3, a._4, retrieveTopHashtags(b)))
-
     }
     private def retrieveTopHashtags(m: Map[Hashtag, Int]): Map[Hashtag, Int] = m.toList.sortWith((a,b) => {
       if (a._2 == b._2) {
