@@ -39,12 +39,10 @@ class TWStream[F[_]](implicit F: ConcurrentEffect[F], cs: ContextShift[F]) {
 
 
   def stream(blockingEC: ExecutionContext): Stream[F, Unit] = {
-    val startTime = LocalTime.now()
-
-    def timeDeltaSeconds = Duration.between(startTime, LocalTime.now()).toMillis.toDouble / 1000
+    val processor = TweetProcessor.impl[F]
     val req = Request[F](Method.GET, Uri.uri("https://stream.twitter.com/1.1/statuses/sample.json"))
     val s   = jsonStream("2ijtWnTf0QTWIXdAk7iO5ttF6", "z3x375TZ1WubFGHx8iJrvgOsxWBQtDDBnvvDnmc8dBJ59x7BpX", "1133841180507234304-fcQzIoHTuvxxiAlbSGjiZMjMlwDEHn", "LszzxehNhW4Mu9EOMy8cLqKVBLyxKBy7p5rhVTV7sbMhp")(req)
-    val processor = TweetProcessor.impl[F]
+
     val tweets = s.map(_.as[Tweet]).collect { case Right(x) => x }.take(15)
       processor.analyze(tweets)
       .map(_.toString)
