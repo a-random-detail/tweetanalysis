@@ -56,6 +56,7 @@ class TWStream[F[_]](implicit F: ConcurrentEffect[F], cs: ContextShift[F]) {
           hour:   ${x.tweetsPerHour}
         top hashtags: ${x.topHashtags}
         percentage containing url: ${x.percentageContainingUrl}
+        percentage containing photo url: ${x.percentageContainingPhotoUrl}
         ---------------
         """
       })

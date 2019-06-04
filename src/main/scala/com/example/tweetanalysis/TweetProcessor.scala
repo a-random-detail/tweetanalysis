@@ -25,24 +25,25 @@ object TweetProcessor {
     def analyze(s: Stream[F, Tweet]): Stream[F, AnalysisResult] = {
       def metadata =
         s.map(TweetMetadata.get(_))
-          .scan((Map[Hashtag, Int](), false))((acc, next) => {
+          .scan((Map[Hashtag, Int](), false, false))((acc, next) => {
             val nextMap = next.hashtags.groupBy(i => i).mapValues(_.size)
-            (acc._1.combine(nextMap), next.urls.length > 0)
+            (acc._1.combine(nextMap), next.urls.length > 0, next.photoUrls.length > 0)
           })
           .drop(1)
       def count =
         metadata
-          .scan((0, 0.0, 0))((acc, next) => {
+          .scan((0, 0.0, 0, 0))((acc, next) => {
             val total = acc._1 + 1
             val incrementUrls = if (next._2) acc._3 + 1 else acc._3
-            (total, timeDeltaSeconds, incrementUrls)
+            val incrementPhotoUrls = if (next._3) acc._4 + 1 else acc._4
+            (total, timeDeltaSeconds, incrementUrls, incrementPhotoUrls)
           })
           .drop(1)
       count.zipWith(metadata)((a, b) => {
-        val (total, timeElapsed, numberContainingUrls) = a
+        val (total, timeElapsed, numberContainingUrls, numberContainingPhotoUrls) = a
         val tweetsPerSecond = total.toDouble / timeElapsed
-        val urlPercentage = Math.round(
-          numberContainingUrls.toDouble / total.toDouble * 10000.0) / 100.0
+        val urlPercentage = roundPercentage(numberContainingUrls.toDouble / total.toDouble)
+        val photoUrlPercentage = roundPercentage(numberContainingPhotoUrls.toDouble / total.toDouble)
         AnalysisResult(total,
                        tweetsPerSecond,
                        tweetsPerSecond * 60,
@@ -50,10 +51,10 @@ object TweetProcessor {
                        timeElapsed,
                        retrieveTopHashtags(b._1),
                        urlPercentage,
-                       0.0)
+                       photoUrlPercentage)
       })
     }
-
+    private def roundPercentage(d: Double) = Math.round(d * 10000.0) / 100.0
     private def retrieveTopHashtags(m: Map[Hashtag, Int]): Map[Hashtag, Int] =
       m.toList
         .sortWith((a, b) => {

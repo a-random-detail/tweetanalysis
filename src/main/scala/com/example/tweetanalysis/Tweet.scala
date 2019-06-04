@@ -19,7 +19,7 @@ object Tweet {
     jsonEncoderOf
 }
 
-case class Entities(hashtags: List[Hashtag], urls: List[TweetUrl], mediaUrls: List[MediaUrl])
+case class Entities(hashtags: List[Hashtag], urls: List[TweetUrl], media: List[MediaUrl])
 object Entities {
   implicit val entityDecoder: Decoder[Entities] = deriveDecoder[Entities]
   implicit def entityEntityDecoder[F[_]: Sync]: EntityDecoder[F, Entities] =
@@ -54,7 +54,7 @@ object MediaUrl {
   implicit val mediaUrlDecoder: Decoder[MediaUrl] = Decoder.forProduct2("url", "type")(MediaUrl.apply)
   implicit def mediaUrlEntityDecoder[F[_]: Sync]: EntityDecoder[F, MediaUrl] =
     jsonOf
-  implicit val mediaUrlEncoder: Encoder[MediaUrl] = Encoder.forProduct2("url", "media_type")(m =>
+  implicit val mediaUrlEncoder: Encoder[MediaUrl] = Encoder.forProduct2("url", "type")(m =>
     (m.url, m.media_type)
   )
   implicit def mediaUrlEntityEncoder[F[_]: Applicative]: EntityEncoder[F, MediaUrl] =
