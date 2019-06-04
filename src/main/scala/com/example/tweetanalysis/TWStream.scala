@@ -43,7 +43,7 @@ class TWStream[F[_]](implicit F: ConcurrentEffect[F], cs: ContextShift[F]) {
     val req = Request[F](Method.GET, Uri.uri("https://stream.twitter.com/1.1/statuses/sample.json"))
     def s   = jsonStream(<Consumer API key>, <Consumer API secret key>, <Access token>, <Access token secret>)(req)
 
-    def tweets = s.map(_.as[Tweet]).collect { case Right(x) => x }.take(50)
+    def tweets = s.map(_.as[Tweet]).collect { case Right(x) => x }
       processor.analyze(tweets)
       .map(x => {
         s"""
