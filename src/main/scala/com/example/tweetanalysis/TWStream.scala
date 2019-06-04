@@ -49,11 +49,12 @@ class TWStream[F[_]](implicit F: ConcurrentEffect[F], cs: ContextShift[F]) {
         s"""
         ---------------
         total tweets: ${x.totalTweets}
+        time elapsed: ${x.timeElapsed}
         tweets per:
           second: ${x.tweetsPerSecond}
           minute: ${x.tweetsPerMinute}
           hour:   ${x.tweetsPerHour}
-        top hashtags: ${x.topHashtags.keys.toList}
+        top hashtags: ${x.topHashtags}
         ---------------
         """
       })
