@@ -31,22 +31,22 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
     )
 
     val inputTweet =
-      Tweet("1970-01-01", "text here", new Entities(expectedHashtags, List()))
+      Tweet("1970-01-01", "text here", new Entities(expectedHashtags, List(), List()))
     TweetMetadata.get(inputTweet).hashtags must beEqualTo(expectedHashtags)
   }
 
   private[this] def returnsEmptyListWhenNil(): MatchResult[List[Hashtag]] = {
-    val inputTweet = Tweet("1970-01-01", "text here", new Entities(List(), List()))
+    val inputTweet = Tweet("1970-01-01", "text here", new Entities(List(), List(), List()))
     TweetMetadata.get(inputTweet).hashtags must beEqualTo(List[Hashtag]())
   }
 
   private[this] def returnsUrlTrueWhenUrlPresent(): MatchResult[List[TweetUrl]] = {
       val expected = List(new TweetUrl("boom.com"), new TweetUrl("boom.org"))
-      val inputTweet = Tweet("1970-01-01", "text here", new Entities(List(), expected))
+      val inputTweet = Tweet("1970-01-01", "text here", new Entities(List(), expected, List()))
       TweetMetadata.get(inputTweet).urls must beEqualTo(expected)
   }
   private[this] def returnsUrlFalseWhenNoUrlsPresent(): MatchResult[List[TweetUrl]] = {
-      val inputTweet = Tweet("1970-01-01", "text here", new Entities(List(), List()))
+      val inputTweet = Tweet("1970-01-01", "text here", new Entities(List(), List(), List()))
       TweetMetadata.get(inputTweet).urls must beEqualTo(List())
   }
 }
