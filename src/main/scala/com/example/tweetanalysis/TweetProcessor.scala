@@ -21,7 +21,6 @@ object TweetProcessor {
   def impl[F[_]: Sync]: TweetProcessor[F] = new TweetProcessor[F] {
     val startTime = LocalTime.now()
     def analyze(s: Stream[F, Tweet]): Stream[F, AnalysisResult] = {
-      def metadata = s.map(TweetMetadata.get(_))
       def count =
         s.scan((0, 0.0))((acc, _) => {
             val total = acc._1 + 1
@@ -30,7 +29,7 @@ object TweetProcessor {
           .drop(1)
 
       def hashtagTotals =
-        metadata
+        s.map(TweetMetadata.get(_))
           .scan(Map[Hashtag, Int]())((acc, next) =>
             acc.combine(next.hashtags.groupBy(i => i).mapValues(_.size)))
           .drop(1)
