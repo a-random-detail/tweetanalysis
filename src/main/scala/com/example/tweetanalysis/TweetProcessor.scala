@@ -22,29 +22,30 @@ object TweetProcessor {
   def impl[F[_]: Sync]: TweetProcessor[F] = new TweetProcessor[F] {
     val startTime = LocalTime.now()
     def analyze(s: Stream[F, Tweet]): Stream[F, AnalysisResult] = {
-      def count =
-        s.scan((0, 0.0))((acc, _) => {
-            val total = acc._1 + 1
-            (total, timeDeltaSeconds)
+      def metadata =
+        s.map(TweetMetadata.get(_))
+          .scan((Map[Hashtag, Int](), false))((acc, next) => {
+            val nextMap = next.hashtags.groupBy(i => i).mapValues(_.size)
+            (acc._1.combine(nextMap), next.urls.length > 0)
           })
           .drop(1)
-
-      def hashtagTotals =
-        s.map(TweetMetadata.get(_))
-          .map(_.hashtags)
-          .scan(Map[Hashtag, Int]())((acc, next) =>
-            acc.combine(next.groupBy(i => i).mapValues(_.size)))
-          .drop(1)
-      count.zipWith(hashtagTotals)((a, b) => {
-        val (total, timeElapsed) = a
+      def count = metadata.scan((0, 0.0, 0))((acc, next) => {
+          val total = acc._1 + 1
+          val incrementUrls = if (next._2) acc._3 + 1 else acc._3
+          (total, timeDeltaSeconds, incrementUrls)
+        })
+        .drop(1)
+      count.zipWith(metadata)((a, b) => {
+        val (total, timeElapsed, numberContainingUrls) = a
         val tweetsPerSecond = total.toDouble / timeElapsed
+        val urlPercentage = Math.round(numberContainingUrls.toDouble / total.toDouble * 10000.0) / 100.0
         AnalysisResult(total,
                        tweetsPerSecond,
                        tweetsPerSecond * 60,
                        tweetsPerSecond * 60 * 60,
                        timeElapsed,
-                       retrieveTopHashtags(b),
-                       0.0)
+                       retrieveTopHashtags(b._1),
+                       urlPercentage)
       })
     }
 
