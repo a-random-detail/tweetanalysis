@@ -15,7 +15,8 @@ case class AnalysisResult(totalTweets: Int,
                           tweetsPerMinute: Double,
                           tweetsPerHour: Double,
                           timeElapsed: Double,
-                          topHashtags: Map[Hashtag, Int])
+                          topHashtags: Map[Hashtag, Int],
+                          percentageContainingUrl: Double)
 
 object TweetProcessor {
   def impl[F[_]: Sync]: TweetProcessor[F] = new TweetProcessor[F] {
@@ -30,8 +31,9 @@ object TweetProcessor {
 
       def hashtagTotals =
         s.map(TweetMetadata.get(_))
+          .map(_.hashtags)
           .scan(Map[Hashtag, Int]())((acc, next) =>
-            acc.combine(next.hashtags.groupBy(i => i).mapValues(_.size)))
+            acc.combine(next.groupBy(i => i).mapValues(_.size)))
           .drop(1)
       count.zipWith(hashtagTotals)((a, b) => {
         val (total, timeElapsed) = a
@@ -41,7 +43,8 @@ object TweetProcessor {
                        tweetsPerSecond * 60,
                        tweetsPerSecond * 60 * 60,
                        timeElapsed,
-                       retrieveTopHashtags(b))
+                       retrieveTopHashtags(b),
+                       0.0)
       })
     }
 

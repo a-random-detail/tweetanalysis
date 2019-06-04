@@ -31,6 +31,9 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     "returns top 3 hashtags sorted alphabetically for ties" >> {
       returnsTopHashtags()
     }
+    "returns percent of tweets that contain a url" >> {
+      returnsTweetsContainingUrlPercentages()
+    }
   }
 
   private[this] def returnProcessingResult(
@@ -42,25 +45,25 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-01-01",
                 "First test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-02-07",
                 "Second test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-03-06",
                 "Third test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-01-02",
                 "Fourth test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-02-14",
                 "Fifth test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-03-28",
                 "Sixth test tweet",
-                new Entities(List[Hashtag]()))
+                new Entities(List(),List()))
     )
     val expectedOutput = Stream(1, 2, 3, 4, 5, 6)
-      .map(AnalysisResult(_, 0.0, 0.0, 0.0, 0.0, Map[Hashtag, Int]()))
+      .map(AnalysisResult(_, 0.0, 0.0, 0.0, 0.0, Map[Hashtag, Int](), 0.0))
       .toList
       .map(x => x.totalTweets)
     val result = returnProcessingResult(input).compile.toVector
@@ -74,22 +77,22 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-01-01",
                 "First test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-02-07",
                 "Second test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-03-06",
                 "Third test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-01-02",
                 "Fourth test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-02-14",
                 "Fifth test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-03-28",
                 "Sixth test tweet",
-                new Entities(List[Hashtag]()))
+                new Entities(List(),List()))
     )
     val result = returnProcessingResult(input).compile.toVector
       .unsafeRunSync()
@@ -102,22 +105,22 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-01-01",
                 "First test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-02-07",
                 "Second test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-03-06",
                 "Third test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-01-02",
                 "Fourth test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-02-14",
                 "Fifth test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-03-28",
                 "Sixth test tweet",
-                new Entities(List[Hashtag]()))
+                new Entities(List(),List()))
     )
     val result = returnProcessingResult(input).compile.toVector
       .unsafeRunSync()
@@ -131,22 +134,22 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-01-01",
                 "First test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-02-07",
                 "Second test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-03-06",
                 "Third test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-01-02",
                 "Fourth test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-02-14",
                 "Fifth test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-03-28",
                 "Sixth test tweet",
-                new Entities(List[Hashtag]()))
+                new Entities(List(),List()))
     )
     val result =
       returnProcessingResult(input).compile.toVector.unsafeRunSync().toList
@@ -157,22 +160,22 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-01-01",
                 "First test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-02-07",
                 "Second test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-03-06",
                 "Third test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-01-02",
                 "Fourth test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-02-14",
                 "Fifth test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(),List())),
       new Tweet("1970-03-28",
                 "Sixth test tweet",
-                new Entities(List[Hashtag]()))
+                new Entities(List(),List()))
     )
     val result = returnProcessingResult(input).compile.toVector
       .unsafeRunSync()
@@ -182,33 +185,35 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
   }
 
   private[this] def returnsTweetsPerHourBasedOnSeconds()
-    : MatchResult[Boolean] = {
+    : MatchResult[List[Double]] = {
     val input = Stream(
       new Tweet("1970-01-01",
                 "First test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(), List())),
       new Tweet("1970-02-07",
                 "Second test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(), List())),
       new Tweet("1970-03-06",
                 "Third test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(), List())),
       new Tweet("1970-01-02",
                 "Fourth test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(), List())),
       new Tweet("1970-02-14",
                 "Fifth test tweet",
-                new Entities(List[Hashtag]())),
+                new Entities(List(), List())),
       new Tweet("1970-03-28",
                 "Sixth test tweet",
-                new Entities(List[Hashtag]()))
+                new Entities(List(), List()))
     )
     val result =
       returnProcessingResult(input).compile.toVector.unsafeRunSync().toList
-    result.forall(x => (x.tweetsPerSecond * 60 * 60) == x.tweetsPerHour) must beTrue
+    val expected = result.map(_.tweetsPerSecond * 60 * 60)
+    val actual = result.map(_.tweetsPerHour)
+    actual must beEqualTo(expected)
   }
 
-  private[this] def returnsTopHashtags(): MatchResult[Boolean] = {
+  private[this] def returnsTopHashtags(): MatchResult[List[Map[Hashtag, Int]]] = {
     val topHashtag = Hashtag("blerp")
     val secondHashtag = Hashtag("bleep")
     val thirdHashtag = Hashtag("ayoo")
@@ -217,22 +222,19 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-01-01",
                 "First test tweet",
-                new Entities(List[Hashtag](topHashtag, thirdHashtag))),
+                new Entities(List[Hashtag](topHashtag, thirdHashtag), List())),
       new Tweet("1970-02-07",
                 "Second test tweet",
-                new Entities(List[Hashtag](topHashtag, secondHashtag))),
+                new Entities(List[Hashtag](topHashtag, secondHashtag), List())),
       new Tweet("1970-03-06",
                 "Third test tweet",
-                new Entities(List[Hashtag](topHashtag, fourthHashtag))),
+                new Entities(List[Hashtag](topHashtag, fourthHashtag), List())),
       new Tweet("1970-03-08",
                 "Fourth test tweet",
-                new Entities(List[Hashtag](topHashtag, secondHashtag))),
+                new Entities(List[Hashtag](secondHashtag, topHashtag), List())),
       new Tweet("1970-03-09",
                 "Fifth test tweet",
-                new Entities(List[Hashtag](thirdHashtag, secondHashtag))),
-      new Tweet("1970-03-09",
-                "Sixth test tweet",
-                new Entities(List[Hashtag](thirdHashtag, secondHashtag)))
+                new Entities(List[Hashtag](thirdHashtag, secondHashtag), List()))
     )
     val expectedTopHashtagsList = List(
       Map(topHashtag -> 1, thirdHashtag -> 1),
@@ -245,10 +247,26 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
       .unsafeRunSync()
       .toList
       .map(_.topHashtags)
-    val resultMatchesExpected = (0 to 4)
-      .map(x => result(x).equals(expectedTopHashtagsList(x)))
-      .forall(_ == true)
-    resultMatchesExpected must beTrue
+    result must beEqualTo(expectedTopHashtagsList)
+  }
+
+  private[this] def returnsTweetsContainingUrlPercentages(): MatchResult[List[Double]] = {
+    val input = Stream(
+      new Tweet("1970-03-09",
+                "test tweet with url",
+                new Entities(List(), List[TweetUrl](new TweetUrl("http://example.com")))),
+      new Tweet("1970-4-10", "test tweet without url", new Entities(List(), List())),
+      new Tweet("1970-4-10", "test tweet without url #2", new Entities(List(), List())),
+      new Tweet("1970-4-10", "test tweet without url #3", new Entities(List(), List())),
+      new Tweet("1970-4-10", "test tweet with url #2", new Entities(List(), List(new TweetUrl("http://example2.com"))))
+    )
+    val expectedPercentages = List(100.00, 50.00, 33.33, 25.00, 40.00)
+    val result = returnProcessingResult(input).compile.toVector
+      .unsafeRunSync()
+      .toList
+      .map(_.percentageContainingUrl)
+
+      result must beEqualTo(expectedPercentages)
   }
 
   private[this] def validTimeSeries(l: List[Double]): Boolean =

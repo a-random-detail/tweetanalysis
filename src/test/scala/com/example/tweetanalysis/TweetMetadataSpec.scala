@@ -25,12 +25,12 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
     )
 
     val inputTweet =
-      Tweet("1970-01-01", "text here", new Entities(expectedHashtags))
+      Tweet("1970-01-01", "text here", new Entities(expectedHashtags, List()))
     TweetMetadata.get(inputTweet).hashtags must beEqualTo(expectedHashtags)
   }
 
   private[this] def returnsEmptyListWhenNil(): MatchResult[List[Hashtag]] = {
-    val inputTweet = Tweet("1970-01-01", "text here", new Entities(List()))
+    val inputTweet = Tweet("1970-01-01", "text here", new Entities(List(), List()))
     TweetMetadata.get(inputTweet).hashtags must beEqualTo(List[Hashtag]())
   }
 }
