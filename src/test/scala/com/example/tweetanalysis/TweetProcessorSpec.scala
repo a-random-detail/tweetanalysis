@@ -37,6 +37,9 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     "returns percent of tweets that contain photo urls" >> {
       returnsPercentageOfTweetsContainingPhotoUrl()
     }
+    "ignores non-photo media urls when accounting for percentage of tweets with photos" >> {
+      ignoresNonPhotoMediaUrls()
+    }
   }
 
   private[this] def returnProcessingResult(
@@ -276,13 +279,32 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-03-09",
                 "test tweet with url",
-                new Entities(List(), List(), List(new MediaUrl("https://pictureshere.com")))),
+                new Entities(List(), List(), List(new MediaUrl("https://pictureshere.com", "photo")))),
       new Tweet("1970-4-10", "test tweet without url", new Entities(List(), List(), List())),
-      new Tweet("1970-4-10", "test tweet without url #2", new Entities(List(), List(), List(new MediaUrl("http://also-pictures.net")))),
+      new Tweet("1970-4-10", "test tweet without url #2", new Entities(List(), List(), List(new MediaUrl("http://also-pictures.net", "photo")))),
       new Tweet("1970-4-10", "test tweet without url #3", new Entities(List(), List(), List())),
-      new Tweet("1970-4-10", "test tweet with url #2", new Entities(List(), List(), List(new MediaUrl("http://example2.com"))))
+      new Tweet("1970-4-10", "test tweet with url #2", new Entities(List(), List(), List(new MediaUrl("http://example2.com", "photo"))))
     )
     val expectedPercentages = List(100.00, 50.00, 66.67, 50.00, 60.00)
+    val result = returnProcessingResult(input).compile.toVector
+      .unsafeRunSync()
+      .toList
+      .map(_.percentageContainingPhotoUrl)
+
+      result must beEqualTo(expectedPercentages)
+  }
+
+  private[this] def ignoresNonPhotoMediaUrls(): MatchResult[List[Double]] = {
+    val input = Stream(
+      new Tweet("1970-03-09",
+                "test tweet with url",
+                new Entities(List(), List(), List(new MediaUrl("https://pictureshere.com", "photo")))),
+      new Tweet("1970-4-10", "test tweet without url", new Entities(List(), List(), List())),
+      new Tweet("1970-4-10", "test tweet without url #2", new Entities(List(), List(), List(new MediaUrl("http://also-pictures.net", "animated_gif")))),
+      new Tweet("1970-4-10", "test tweet without url #3", new Entities(List(), List(), List())),
+      new Tweet("1970-4-10", "test tweet with url #2", new Entities(List(), List(), List(new MediaUrl("http://example2.com", "video"))))
+    )
+    val expectedPercentages = List(100.00, 50.00, 33.33, 25.00, 20.00)
     val result = returnProcessingResult(input).compile.toVector
       .unsafeRunSync()
       .toList

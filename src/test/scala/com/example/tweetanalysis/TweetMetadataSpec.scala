@@ -16,10 +16,19 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
       returnsEmptyListWhenNil()
     }
     "returns list of urls when urls are present" >> {
-      returnsUrlTrueWhenUrlPresent()
+      returnsUrlTrueWhenUrlsPresent()
     }
     "returns empty list of urls whenn urls are missing" >> {
       returnsUrlFalseWhenNoUrlsPresent()
+    }
+    "returns list of media urls when present" >> {
+      returnsUrlTrueWhenMediaUrlsPresent()
+    }
+    "returns empty list of media urls when media urls are missing" >> {
+      returnsUrlFalseWhenNoMediaUrlsPresent()
+    }
+    "ignores non-photo media urls" >> {
+      ignoresNonPhotoMediaUrls()
     }
   }
 
@@ -40,13 +49,29 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
     TweetMetadata.get(inputTweet).hashtags must beEqualTo(List[Hashtag]())
   }
 
-  private[this] def returnsUrlTrueWhenUrlPresent(): MatchResult[List[TweetUrl]] = {
+  private[this] def returnsUrlTrueWhenUrlsPresent(): MatchResult[List[TweetUrl]] = {
       val expected = List(new TweetUrl("boom.com"), new TweetUrl("boom.org"))
       val inputTweet = Tweet("1970-01-01", "text here", new Entities(List(), expected, List()))
       TweetMetadata.get(inputTweet).urls must beEqualTo(expected)
   }
+
   private[this] def returnsUrlFalseWhenNoUrlsPresent(): MatchResult[List[TweetUrl]] = {
       val inputTweet = Tweet("1970-01-01", "text here", new Entities(List(), List(), List()))
       TweetMetadata.get(inputTweet).urls must beEqualTo(List())
+  }
+
+  private[this] def returnsUrlTrueWhenMediaUrlsPresent(): MatchResult[List[MediaUrl]] = {
+      val expected = List(new MediaUrl("boom.com", "photo"), new MediaUrl("boom.org","photo"))
+      val inputTweet = Tweet("1970-01-01", "text here", new Entities(List(),List(),expected))
+      TweetMetadata.get(inputTweet).photoUrls must beEqualTo(expected)
+  }
+
+  private[this] def returnsUrlFalseWhenNoMediaUrlsPresent(): MatchResult[List[MediaUrl]] = {
+      val inputTweet = Tweet("1970-01-01", "text here", new Entities(List(), List(), List()))
+      TweetMetadata.get(inputTweet).photoUrls must beEqualTo(List())
+  }
+  private[this] def ignoresNonPhotoMediaUrls(): MatchResult[List[MediaUrl]] = {
+      val inputTweet = Tweet("1970-01-01", "text here", new Entities(List(), List(), List(new MediaUrl("do not see this", "video"), new MediaUrl("do not see this either", "animated_gif"))))
+      TweetMetadata.get(inputTweet).photoUrls must beEqualTo(List())
   }
 }
