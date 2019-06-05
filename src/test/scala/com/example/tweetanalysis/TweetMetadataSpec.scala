@@ -82,4 +82,10 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
       val inputTweet = Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(List()), Some(shouldNotShowUp)))
       TweetMetadata.get(inputTweet).photoUrls must beEqualTo(List())
   }
+
+  private[this] def handlesNoneValues(): MatchResult[Metadata] = {
+    val expected = Metadata(List(), List(), List())
+    val inputTweet = Tweet("1970-01-01", "text here", new Entities(None, None, None))
+    TweetMetadata.get(inputTweet) must beEqualTo(expected)
+  }
 }

@@ -43,6 +43,9 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     "ignores photo media urls without indices" >> {
       ignoresMediaUrlsWithoutIndices()
     }
+    "handles entities fields with a value of None" >> {
+      canHandleNoneEntitiesFields()
+    }
   }
 
   private[this] def returnProcessingResult(
@@ -331,6 +334,21 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
       .map(_.percentageContainingPhotoUrl)
 
       result must beEqualTo(expectedPercentages)
+  }
+  private[this] def canHandleNoneEntitiesFields(): MatchResult[(Map[Hashtag, Int], Double, Double)] = {
+    val input = Stream(
+      new Tweet("1970-03-09",
+                "test tweet with url",
+                new Entities(None, None, None))
+    )
+
+    val expected = (Map[Hashtag, Int](),0.0,0.0)
+    val result: List[(Map[Hashtag, Int], Double, Double)] = returnProcessingResult(input).compile.toVector
+      .unsafeRunSync()
+      .toList
+      .map(x => (x.topHashtags, x.percentageContainingUrl, x.percentageContainingPhotoUrl))
+
+      result.head must beEqualTo(expected)
   }
 
   private[this] def validTimeSeries(l: List[Double]): Boolean =

@@ -19,37 +19,31 @@ case class AnalysisResult(totalTweets: Int,
                           percentageContainingUrl: Double,
                           percentageContainingPhotoUrl: Double)
 
+case class ProcessedMetadata(topHashtags: Map[Hashtag, Int], hasUrls: Boolean, hasPhotoUrls: Boolean)
 object TweetProcessor {
   def impl[F[_]: Sync]: TweetProcessor[F] = new TweetProcessor[F] {
     val startTime = LocalTime.now()
     def analyze(s: Stream[F, Tweet]): Stream[F, AnalysisResult] = {
       def metadata =
         s.map(TweetMetadata.get(_))
-          .scan((Map[Hashtag, Int](), false, false))((acc, next) => {
+          .scan(ProcessedMetadata(Map[Hashtag, Int](), false, false))((acc, next) => {
             val nextMap = next.hashtags.groupBy(i => i).mapValues(_.size)
-            (acc._1.combine(nextMap), next.urls.length > 0, next.photoUrls.length > 0)
+            ProcessedMetadata(acc.topHashtags.combine(nextMap), next.urls.length > 0, next.photoUrls.length > 0)
           })
           .drop(1)
-      def count =
-        metadata
-          .scan((0, 0.0, 0, 0))((acc, next) => {
-            val total = acc._1 + 1
-            val incrementUrls = if (next._2) acc._3 + 1 else acc._3
-            val incrementPhotoUrls = if (next._3) acc._4 + 1 else acc._4
-            (total, timeDeltaSeconds, incrementUrls, incrementPhotoUrls)
-          })
-          .drop(1)
-      count.zipWith(metadata)((a, b) => {
-        val (total, timeElapsed, numberContainingUrls, numberContainingPhotoUrls) = a
-        val tweetsPerSecond = total.toDouble / timeElapsed
-        val urlPercentage = roundPercentage(numberContainingUrls.toDouble / total.toDouble)
-        val photoUrlPercentage = roundPercentage(numberContainingPhotoUrls.toDouble / total.toDouble)
-        AnalysisResult(total,
+
+      def counter = StreamCounter.impl[F](startTime).getTweetMetadataCounts(metadata)
+
+      counter.zipWith(metadata)((a, b) => {
+        val tweetsPerSecond = a.total.toDouble / a.timeElapsed
+        val urlPercentage = roundPercentage(a.urlCount.toDouble / a.total.toDouble)
+        val photoUrlPercentage = roundPercentage(a.photoUrlCount.toDouble / a.total.toDouble)
+        AnalysisResult(a.total,
                        tweetsPerSecond,
                        tweetsPerSecond * 60,
                        tweetsPerSecond * 60 * 60,
-                       timeElapsed,
-                       retrieveTopHashtags(b._1),
+                       a.timeElapsed,
+                       retrieveTopHashtags(b.topHashtags),
                        urlPercentage,
                        photoUrlPercentage)
       })
@@ -67,7 +61,6 @@ object TweetProcessor {
         .take(3)
         .toMap
 
-    private def timeDeltaSeconds: Double =
-      Duration.between(startTime, LocalTime.now()).toMillis.toDouble / 1000
+
   }
 }
