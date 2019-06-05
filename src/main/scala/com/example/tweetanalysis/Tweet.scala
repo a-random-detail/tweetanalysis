@@ -7,6 +7,10 @@ import io.circe._
 import io.circe.generic.semiauto._
 import org.http4s.circe._
 import org.http4s.{EntityDecoder, EntityEncoder}
+import io.circe.generic.extras.Configuration
+import io.circe.generic.extras.auto._
+
+
 
 
 case class Tweet(created_at: String, text: String, entities: Entities)
@@ -19,13 +23,14 @@ object Tweet {
     jsonEncoderOf
 }
 
-case class Entities(hashtags: List[Hashtag], urls: List[TweetUrl], media: List[MediaUrl])
+case class Entities(hashtags: Option[List[Hashtag]] = Some(List()), urls: Option[List[TweetUrl]] = Some(List()), media: Option[List[MediaUrl]] = Some(List()))
 object Entities {
-  implicit val entityDecoder: Decoder[Entities] = deriveDecoder[Entities]
-  implicit def entityEntityDecoder[F[_]: Sync]: EntityDecoder[F, Entities] =
+  implicit val customConfig: Configuration = Configuration.default.withDefaults
+  implicit val entitiesDecoder: Decoder[Entities] = deriveDecoder[Entities]
+  implicit def entitiesEntityDecoder[F[_]: Sync]: EntityDecoder[F, Entities] =
     jsonOf
-  implicit val entityEncoder: Encoder[Entities] = deriveEncoder[Entities]
-  implicit def entityEntityEncoder[F[_]: Applicative]: EntityEncoder[F, Entities] =
+  implicit val entitiesEncoder: Encoder[Entities] = deriveEncoder[Entities]
+  implicit def entitiesEntityEncoder[F[_]: Applicative]: EntityEncoder[F, Hashtag] =
     jsonEncoderOf
 }
 
@@ -49,13 +54,13 @@ object TweetUrl {
     jsonEncoderOf
 }
 
-case class MediaUrl(url: String, media_type: String)
+case class MediaUrl(url: String, media_type: String, indices: List[Int])
 object MediaUrl {
-  implicit val mediaUrlDecoder: Decoder[MediaUrl] = Decoder.forProduct2("url", "type")(MediaUrl.apply)
+  implicit val mediaUrlDecoder: Decoder[MediaUrl] = Decoder.forProduct3("url", "type", "indices")(MediaUrl.apply)
   implicit def mediaUrlEntityDecoder[F[_]: Sync]: EntityDecoder[F, MediaUrl] =
     jsonOf
-  implicit val mediaUrlEncoder: Encoder[MediaUrl] = Encoder.forProduct2("url", "type")(m =>
-    (m.url, m.media_type)
+  implicit val mediaUrlEncoder: Encoder[MediaUrl] = Encoder.forProduct3("url", "type", "indices")(m =>
+    (m.url, m.media_type, m.indices)
   )
   implicit def mediaUrlEntityEncoder[F[_]: Applicative]: EntityEncoder[F, MediaUrl] =
     jsonEncoderOf

@@ -40,6 +40,9 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     "ignores non-photo media urls when accounting for percentage of tweets with photos" >> {
       ignoresNonPhotoMediaUrls()
     }
+    "ignores photo media urls without indices" >> {
+      ignoresMediaUrlsWithoutIndices()
+    }
   }
 
   private[this] def returnProcessingResult(
@@ -51,22 +54,22 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-01-01",
                 "First test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-02-07",
                 "Second test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-03-06",
                 "Third test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-01-02",
                 "Fourth test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-02-14",
                 "Fifth test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-03-28",
                 "Sixth test tweet",
-                new Entities(List(),List(), List()))
+                new Entities(Some(List()),Some(List()), Some(List())))
     )
     val expectedOutput = Stream(1, 2, 3, 4, 5, 6)
       .map(AnalysisResult(_, 0.0, 0.0, 0.0, 0.0, Map[Hashtag, Int](), 0.0, 0.0))
@@ -83,22 +86,22 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-01-01",
                 "First test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-02-07",
                 "Second test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-03-06",
                 "Third test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-01-02",
                 "Fourth test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-02-14",
                 "Fifth test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-03-28",
                 "Sixth test tweet",
-                new Entities(List(),List(), List()))
+                new Entities(Some(List()),Some(List()), Some(List())))
     )
     val result = returnProcessingResult(input).compile.toVector
       .unsafeRunSync()
@@ -111,22 +114,22 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-01-01",
                 "First test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-02-07",
                 "Second test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-03-06",
                 "Third test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-01-02",
                 "Fourth test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-02-14",
                 "Fifth test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-03-28",
                 "Sixth test tweet",
-                new Entities(List(),List(), List()))
+                new Entities(Some(List()),Some(List()), Some(List())))
     )
     val result = returnProcessingResult(input).compile.toVector
       .unsafeRunSync()
@@ -140,22 +143,22 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-01-01",
                 "First test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-02-07",
                 "Second test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-03-06",
                 "Third test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-01-02",
                 "Fourth test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-02-14",
                 "Fifth test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-03-28",
                 "Sixth test tweet",
-                new Entities(List(),List(), List()))
+                new Entities(Some(List()),Some(List()), Some(List())))
     )
     val result =
       returnProcessingResult(input).compile.toVector.unsafeRunSync().toList
@@ -166,22 +169,22 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-01-01",
                 "First test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-02-07",
                 "Second test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-03-06",
                 "Third test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-01-02",
                 "Fourth test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-02-14",
                 "Fifth test tweet",
-                new Entities(List(),List(), List())),
+                new Entities(Some(List()),Some(List()), Some(List()))),
       new Tweet("1970-03-28",
                 "Sixth test tweet",
-                new Entities(List(),List(), List()))
+                new Entities(Some(List()),Some(List()), Some(List())))
     )
     val result = returnProcessingResult(input).compile.toVector
       .unsafeRunSync()
@@ -195,22 +198,22 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-01-01",
                 "First test tweet",
-                new Entities(List(), List(), List())),
+                new Entities(Some(List()), Some(List()), Some(List()))),
       new Tweet("1970-02-07",
                 "Second test tweet",
-                new Entities(List(), List(), List())),
+                new Entities(Some(List()), Some(List()), Some(List()))),
       new Tweet("1970-03-06",
                 "Third test tweet",
-                new Entities(List(), List(), List())),
+                new Entities(Some(List()), Some(List()), Some(List()))),
       new Tweet("1970-01-02",
                 "Fourth test tweet",
-                new Entities(List(), List(), List())),
+                new Entities(Some(List()), Some(List()), Some(List()))),
       new Tweet("1970-02-14",
                 "Fifth test tweet",
-                new Entities(List(), List(), List())),
+                new Entities(Some(List()), Some(List()), Some(List()))),
       new Tweet("1970-03-28",
                 "Sixth test tweet",
-                new Entities(List(), List(), List()))
+                new Entities(Some(List()), Some(List()), Some(List())))
     )
     val result =
       returnProcessingResult(input).compile.toVector.unsafeRunSync().toList
@@ -228,19 +231,19 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-01-01",
                 "First test tweet",
-                new Entities(List[Hashtag](topHashtag, thirdHashtag), List(), List())),
+                new Entities(Some(List(topHashtag, thirdHashtag)), Some(List()), Some(List()))),
       new Tweet("1970-02-07",
                 "Second test tweet",
-                new Entities(List[Hashtag](topHashtag, secondHashtag), List(), List())),
+                new Entities(Some(List(topHashtag, secondHashtag)), Some(List()), Some(List()))),
       new Tweet("1970-03-06",
                 "Third test tweet",
-                new Entities(List[Hashtag](topHashtag, fourthHashtag), List(), List())),
+                new Entities(Some(List(topHashtag, fourthHashtag)), Some(List()), Some(List()))),
       new Tweet("1970-03-08",
                 "Fourth test tweet",
-                new Entities(List[Hashtag](secondHashtag, topHashtag), List(), List())),
+                new Entities(Some(List(secondHashtag, topHashtag)), Some(List()), Some(List()))),
       new Tweet("1970-03-09",
                 "Fifth test tweet",
-                new Entities(List[Hashtag](thirdHashtag, secondHashtag), List(), List()))
+                new Entities(Some(List(thirdHashtag, secondHashtag)), Some(List()), Some(List())))
     )
     val expectedTopHashtagsList = List(
       Map(topHashtag -> 1, thirdHashtag -> 1),
@@ -260,11 +263,11 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-03-09",
                 "test tweet with url",
-                new Entities(List(), List(new TweetUrl("http://example.com")), List())),
-      new Tweet("1970-4-10", "test tweet without url", new Entities(List(), List(), List())),
-      new Tweet("1970-4-10", "test tweet without url #2", new Entities(List(), List(), List())),
-      new Tweet("1970-4-10", "test tweet without url #3", new Entities(List(), List(), List())),
-      new Tweet("1970-4-10", "test tweet with url #2", new Entities(List(), List(new TweetUrl("http://example2.com")), List()))
+                new Entities(Some(List()), Some(List(new TweetUrl("http://example.com"))), Some(List()))),
+      new Tweet("1970-4-10", "test tweet without url", new Entities(Some(List()), Some(List()), Some(List()))),
+      new Tweet("1970-4-10", "test tweet without url #2", new Entities(Some(List()), Some(List()), Some(List()))),
+      new Tweet("1970-4-10", "test tweet without url #3", new Entities(Some(List()), Some(List()), Some(List()))),
+      new Tweet("1970-4-10", "test tweet with url #2", new Entities(Some(List()), Some(List(new TweetUrl("http://example2.com"))), Some(List())))
     )
     val expectedPercentages = List(100.00, 50.00, 33.33, 25.00, 40.00)
     val result = returnProcessingResult(input).compile.toVector
@@ -279,11 +282,11 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-03-09",
                 "test tweet with url",
-                new Entities(List(), List(), List(new MediaUrl("https://pictureshere.com", "photo")))),
-      new Tweet("1970-4-10", "test tweet without url", new Entities(List(), List(), List())),
-      new Tweet("1970-4-10", "test tweet without url #2", new Entities(List(), List(), List(new MediaUrl("http://also-pictures.net", "photo")))),
-      new Tweet("1970-4-10", "test tweet without url #3", new Entities(List(), List(), List())),
-      new Tweet("1970-4-10", "test tweet with url #2", new Entities(List(), List(), List(new MediaUrl("http://example2.com", "photo"))))
+                new Entities(Some(List()), Some(List()), Some(List(new MediaUrl("https://pictureshere.com", "photo",List(12, 24)))))),
+      new Tweet("1970-4-10", "test tweet without url", new Entities(Some(List()),Some(List()),Some(List()))),
+      new Tweet("1970-4-10", "test tweet without url #2", new Entities(Some(List()), Some(List()), Some(List(new MediaUrl("http://also-pictures.net", "photo", List(21, 52)))))),
+      new Tweet("1970-4-10", "test tweet without url #3", new Entities(Some(List()),Some(List()),Some(List()))),
+      new Tweet("1970-4-10", "test tweet with url #2", new Entities(Some(List()), Some(List()), Some(List(new MediaUrl("http://example2.com", "photo", List(1,24))))))
     )
     val expectedPercentages = List(100.00, 50.00, 66.67, 50.00, 60.00)
     val result = returnProcessingResult(input).compile.toVector
@@ -298,13 +301,30 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-03-09",
                 "test tweet with url",
-                new Entities(List(), List(), List(new MediaUrl("https://pictureshere.com", "photo")))),
-      new Tweet("1970-4-10", "test tweet without url", new Entities(List(), List(), List())),
-      new Tweet("1970-4-10", "test tweet without url #2", new Entities(List(), List(), List(new MediaUrl("http://also-pictures.net", "animated_gif")))),
-      new Tweet("1970-4-10", "test tweet without url #3", new Entities(List(), List(), List())),
-      new Tweet("1970-4-10", "test tweet with url #2", new Entities(List(), List(), List(new MediaUrl("http://example2.com", "video"))))
+                new Entities(Some(List()), Some(List()), Some(List(new MediaUrl("https://pictureshere.com", "photo", List(1,14)))))),
+      new Tweet("1970-4-10", "test tweet without url", new Entities(Some(List()),Some(List()),Some(List()))),
+      new Tweet("1970-4-10", "test tweet without url #2", new Entities(Some(List()),Some(List()), Some(List(new MediaUrl("http://also-pictures.net", "animated_gif", List(1,24)))))),
+      new Tweet("1970-4-10", "test tweet without url #3", new Entities(Some(List()),Some(List()),Some(List()))),
+      new Tweet("1970-4-10", "test tweet with url #2", new Entities(Some(List()),Some(List()), Some(List(new MediaUrl("http://example2.com", "video", List(1,24))))))
     )
     val expectedPercentages = List(100.00, 50.00, 33.33, 25.00, 20.00)
+    val result = returnProcessingResult(input).compile.toVector
+      .unsafeRunSync()
+      .toList
+      .map(_.percentageContainingPhotoUrl)
+
+      result must beEqualTo(expectedPercentages)
+  }
+  private[this] def ignoresMediaUrlsWithoutIndices(): MatchResult[List[Double]] = {
+    val input = Stream(
+      new Tweet("1970-03-09",
+                "test tweet with url",
+                new Entities(Some(List()), Some(List()), Some(List(new MediaUrl("https://pictureshere.com", "photo", List()))))),
+      new Tweet("1970-4-10", "test tweet without url", new Entities(Some(List()),Some(List()),Some(List()))),
+      new Tweet("1970-4-10", "test photo tweet without indices", new Entities(Some(List()), Some(List()), Some(List(new MediaUrl("https://pictureurlthatisignored.com", "photo", List(12,24)))))),
+    )
+
+    val expectedPercentages = List(0.0, 0.0, 33.33)
     val result = returnProcessingResult(input).compile.toVector
       .unsafeRunSync()
       .toList
