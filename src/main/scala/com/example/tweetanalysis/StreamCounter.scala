@@ -5,7 +5,6 @@ import cats.effect.Sync
 import cats.implicits._
 import java.time._
 import scala.collection.SortedMap
-import scala.annotation.tailrec
 
 trait StreamCounter[F[_]] {
   def getTweetMetadataCounts(s: Stream[F, ProcessedMetadata]): Stream[F, StreamCounterResult]
