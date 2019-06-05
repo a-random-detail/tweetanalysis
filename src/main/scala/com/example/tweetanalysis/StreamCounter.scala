@@ -19,7 +19,7 @@ object StreamCounter {
         case ProcessedMetadata(_, true, true) => StreamCounterResult(acc.total+1, timeDeltaSeconds, acc.urlCount + 1, acc.photoUrlCount + 1)
         case ProcessedMetadata(_, true, false) => StreamCounterResult(acc.total+1, timeDeltaSeconds, acc.urlCount + 1, acc.photoUrlCount)
         case ProcessedMetadata(_, false, true) => StreamCounterResult(acc.total+1, timeDeltaSeconds, acc.urlCount, acc.photoUrlCount + 1)
-        case x => StreamCounterResult(acc.total+1, timeDeltaSeconds, acc.urlCount, acc.photoUrlCount) 
+        case _ => StreamCounterResult(acc.total+1, timeDeltaSeconds, acc.urlCount, acc.photoUrlCount) 
       })
       .drop(1)
     private def timeDeltaSeconds: Double =
