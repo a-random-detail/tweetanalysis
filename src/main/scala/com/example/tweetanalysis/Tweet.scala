@@ -44,7 +44,7 @@ object Hashtag {
     jsonEncoderOf
 }
 
-case class TweetUrl(url: String)
+case class TweetUrl(url: String, expanded_url: String)
 object TweetUrl {
   implicit val tweetUrlDecoder: Decoder[TweetUrl] = deriveDecoder[TweetUrl]
   implicit def tweetUrlEntityDecoder[F[_]: Sync]: EntityDecoder[F, TweetUrl] =

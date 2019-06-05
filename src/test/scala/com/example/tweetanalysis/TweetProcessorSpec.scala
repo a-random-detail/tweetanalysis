@@ -266,11 +266,11 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     val input = Stream(
       new Tweet("1970-03-09",
                 "test tweet with url",
-                new Entities(Some(List()), Some(List(new TweetUrl("http://example.com"))), Some(List()))),
+                new Entities(Some(List()), Some(List(new TweetUrl("http://example.com", "http://unwoundurl.com"))), Some(List()))),
       new Tweet("1970-4-10", "test tweet without url", new Entities(Some(List()), Some(List()), Some(List()))),
       new Tweet("1970-4-10", "test tweet without url #2", new Entities(Some(List()), Some(List()), Some(List()))),
       new Tweet("1970-4-10", "test tweet without url #3", new Entities(Some(List()), Some(List()), Some(List()))),
-      new Tweet("1970-4-10", "test tweet with url #2", new Entities(Some(List()), Some(List(new TweetUrl("http://example2.com"))), Some(List())))
+      new Tweet("1970-4-10", "test tweet with url #2", new Entities(Some(List()), Some(List(new TweetUrl("http://example2.com", "http://unwoundurl2.com"))), Some(List())))
     )
     val expectedPercentages = List(100.00, 50.00, 33.33, 25.00, 40.00)
     val result = returnProcessingResult(input).compile.toVector
