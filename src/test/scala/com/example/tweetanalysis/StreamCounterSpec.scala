@@ -25,10 +25,10 @@ class StreamCounterSpec extends org.specs2.mutable.Specification {
 
   private[this] def returnsRunningTweetTotal(): MatchResult[List[Int]] = {
     val inputStream = Stream(
-      new ProcessedMetadata(Map[Hashtag, Int](), false, false),
-      new ProcessedMetadata(Map[Hashtag, Int](), false, false),
-      new ProcessedMetadata(Map[Hashtag, Int](), false, false),
-      new ProcessedMetadata(Map[Hashtag, Int](), false, false)
+      new ProcessedMetadata(Map[String, Int](), false, false),
+      new ProcessedMetadata(Map[String, Int](), false, false),
+      new ProcessedMetadata(Map[String, Int](), false, false),
+      new ProcessedMetadata(Map[String, Int](), false, false)
     )
 
     val actual = returnImplementation.getTweetMetadataCounts(inputStream).map(_.total).compile.toVector
@@ -39,10 +39,10 @@ class StreamCounterSpec extends org.specs2.mutable.Specification {
   }
   private[this] def returnsUrlCount(): MatchResult[List[Int]] = {
     val inputStream = Stream(
-      new ProcessedMetadata(Map[Hashtag, Int](), false, false),
-      new ProcessedMetadata(Map[Hashtag, Int](), true, false),
-      new ProcessedMetadata(Map[Hashtag, Int](), true, false),
-      new ProcessedMetadata(Map[Hashtag, Int](), false, false),
+      new ProcessedMetadata(Map[String, Int](), false, false),
+      new ProcessedMetadata(Map[String, Int](), true, false),
+      new ProcessedMetadata(Map[String, Int](), true, false),
+      new ProcessedMetadata(Map[String, Int](), false, false),
     )
     val actual = returnImplementation.getTweetMetadataCounts(inputStream).map(_.urlCount).compile.toVector
       .unsafeRunSync()
@@ -53,10 +53,10 @@ class StreamCounterSpec extends org.specs2.mutable.Specification {
 
   private[this] def returnsPhotoUrlCount(): MatchResult[List[Int]] = {
     val inputStream = Stream(
-      new ProcessedMetadata(Map[Hashtag, Int](), false, false),
-      new ProcessedMetadata(Map[Hashtag, Int](), false, true),
-      new ProcessedMetadata(Map[Hashtag, Int](), false, true),
-      new ProcessedMetadata(Map[Hashtag, Int](), false, true),
+      new ProcessedMetadata(Map[String, Int](), false, false),
+      new ProcessedMetadata(Map[String, Int](), false, true),
+      new ProcessedMetadata(Map[String, Int](), false, true),
+      new ProcessedMetadata(Map[String, Int](), false, true),
     )
     val actual = returnImplementation.getTweetMetadataCounts(inputStream).map(_.photoUrlCount).compile.toVector
       .unsafeRunSync()

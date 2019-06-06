@@ -75,7 +75,7 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
                 new Entities(Some(List()),Some(List()), Some(List())))
     )
     val expectedOutput = Stream(1, 2, 3, 4, 5, 6)
-      .map(AnalysisResult(_, 0.0, 0.0, 0.0, 0.0, Map[Hashtag, Int](), 0.0, 0.0))
+      .map(AnalysisResult(_, 0.0, 0.0, 0.0, 0.0, Map[String, Int](), 0.0, 0.0))
       .toList
       .map(x => x.totalTweets)
     val result = returnProcessingResult(input).compile.toVector
@@ -225,7 +225,7 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     actual must beEqualTo(expected)
   }
 
-  private[this] def returnsTopHashtags(): MatchResult[List[Map[Hashtag, Int]]] = {
+  private[this] def returnsTopHashtags(): MatchResult[List[Map[String, Int]]] = {
     val topHashtag = Hashtag("blerp")
     val secondHashtag = Hashtag("bleep")
     val thirdHashtag = Hashtag("ayoo")
@@ -249,11 +249,11 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
                 new Entities(Some(List(thirdHashtag, secondHashtag)), Some(List()), Some(List())))
     )
     val expectedTopHashtagsList = List(
-      Map(topHashtag -> 1, thirdHashtag -> 1),
-      Map(topHashtag -> 2, thirdHashtag -> 1, secondHashtag -> 1),
-      Map(topHashtag -> 3, fourthHashtag -> 1, thirdHashtag -> 1),
-      Map(topHashtag -> 4, secondHashtag -> 2, fourthHashtag -> 1),
-      Map(topHashtag -> 4, secondHashtag -> 3, thirdHashtag -> 2)
+      Map(topHashtag.text -> 1, thirdHashtag.text -> 1),
+      Map(topHashtag.text -> 2, thirdHashtag.text -> 1, secondHashtag.text -> 1),
+      Map(topHashtag.text -> 3, fourthHashtag.text -> 1, thirdHashtag.text -> 1),
+      Map(topHashtag.text -> 4, secondHashtag.text -> 2, fourthHashtag.text -> 1),
+      Map(topHashtag.text -> 4, secondHashtag.text -> 3, thirdHashtag.text -> 2)
     )
     val result = returnProcessingResult(input).compile.toVector
       .unsafeRunSync()
@@ -335,15 +335,15 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
 
       result must beEqualTo(expectedPercentages)
   }
-  private[this] def canHandleNoneEntitiesFields(): MatchResult[(Map[Hashtag, Int], Double, Double)] = {
+  private[this] def canHandleNoneEntitiesFields(): MatchResult[(Map[String, Int], Double, Double)] = {
     val input = Stream(
       new Tweet("1970-03-09",
                 "test tweet with url",
                 new Entities(None, None, None))
     )
 
-    val expected = (Map[Hashtag, Int](),0.0,0.0)
-    val result: List[(Map[Hashtag, Int], Double, Double)] = returnProcessingResult(input).compile.toVector
+    val expected = (Map[String, Int](),0.0,0.0)
+    val result: List[(Map[String, Int], Double, Double)] = returnProcessingResult(input).compile.toVector
       .unsafeRunSync()
       .toList
       .map(x => (x.topHashtags, x.percentageContainingUrl, x.percentageContainingPhotoUrl))

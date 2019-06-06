@@ -15,19 +15,19 @@ case class AnalysisResult(totalTweets: Int,
                           tweetsPerMinute: Double,
                           tweetsPerHour: Double,
                           timeElapsed: Double,
-                          topHashtags: Map[Hashtag, Int],
+                          topHashtags: Map[String, Int],
                           percentageContainingUrl: Double,
                           percentageContainingPhotoUrl: Double)
 
-case class ProcessedMetadata(topHashtags: Map[Hashtag, Int], hasUrls: Boolean, hasPhotoUrls: Boolean)
+case class ProcessedMetadata(topHashtags: Map[String, Int], hasUrls: Boolean, hasPhotoUrls: Boolean)
 object TweetProcessor {
   def impl[F[_]: Sync]: TweetProcessor[F] = new TweetProcessor[F] {
     val startTime = LocalTime.now()
     def analyze(s: Stream[F, Tweet]): Stream[F, AnalysisResult] = {
       def metadata =
         s.map(TweetMetadata.get(_))
-          .scan(ProcessedMetadata(Map[Hashtag, Int](), false, false))((acc, next) => {
-            val nextMap = next.hashtags.groupBy(i => i).mapValues(_.size)
+          .scan(ProcessedMetadata(Map[String, Int](), false, false))((acc, next) => {
+            val nextMap = next.hashtags.groupBy(i => i.text).mapValues(_.size)
             ProcessedMetadata(acc.topHashtags.combine(nextMap), next.urls.length > 0, next.photoUrls.length > 0)
           })
           .drop(1)
@@ -43,17 +43,17 @@ object TweetProcessor {
                        tweetsPerSecond * 60,
                        tweetsPerSecond * 60 * 60,
                        a.timeElapsed,
-                       retrieveTopHashtags(b.topHashtags),
+                       retrieveTopPairs(b.topHashtags),
                        urlPercentage,
                        photoUrlPercentage)
       })
     }
     private def roundPercentage(d: Double) = Math.round(d * 10000.0) / 100.0
-    private def retrieveTopHashtags(m: Map[Hashtag, Int]): Map[Hashtag, Int] =
+    private def retrieveTopPairs(m: Map[String, Int]): Map[String, Int] =
       m.toList
         .sortWith((a, b) => {
           if (a._2 == b._2) {
-            a._1.text < b._1.text
+            a._1 < b._1
           } else {
             a._2 > b._2
           }
