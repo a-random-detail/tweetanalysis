@@ -46,6 +46,10 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     "handles entities fields with a value of None" >> {
       canHandleNoneEntitiesFields()
     }
+
+    "returns top 3 url domains sorted alphabetically for ties" >> {
+      returnsTopUrlDomains()
+    }
   }
 
   private[this] def returnProcessingResult(
@@ -75,7 +79,7 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
                 new Entities(Some(List()),Some(List()), Some(List())))
     )
     val expectedOutput = Stream(1, 2, 3, 4, 5, 6)
-      .map(AnalysisResult(_, 0.0, 0.0, 0.0, 0.0, Map[String, Int](), 0.0, 0.0))
+      .map(AnalysisResult(_, 0.0, 0.0, 0.0, 0.0, Map[String, Int](), Map[String, Int](), 0.0, 0.0))
       .toList
       .map(x => x.totalTweets)
     val result = returnProcessingResult(input).compile.toVector
@@ -349,6 +353,48 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
       .map(x => (x.topHashtags, x.percentageContainingUrl, x.percentageContainingPhotoUrl))
 
       result.head must beEqualTo(expected)
+  }
+
+  private[this] def returnsTopUrlDomains(): MatchResult[List[Map[String, Int]]] = {
+
+    val urlGroup1_1 = TweetUrl("https://t.co/ayoo", "https://twitter.com/boom/bang/134/pow/all")
+    val urlGroup1_2 = TweetUrl("https://t.co/bleep", "https://twitter.com/bingbangboom")
+
+    val urlGroup2_1 = TweetUrl("https://t.co/adsf", "https://boomboom.com/check_this_out.json")
+
+    val urlGroup3_1 = TweetUrl("https://t.co/aaaa", "https://heyheyheyfatalbert.here/yep")
+
+    val urlGroup4_1 = TweetUrl("https://t.co/hahaha", "https://fourthurl.com/more_laughing")
+
+    val input = Stream(
+      new Tweet("1970-01-01",
+                "First test tweet",
+                new Entities(Some(List()), Some(List(urlGroup1_1)), Some(List()))),
+      new Tweet("1970-02-07",
+                "Second test tweet",
+                new Entities(Some(List()), Some(List(urlGroup2_1)), Some(List()))),
+      new Tweet("1970-03-06",
+                "Third test tweet",
+                new Entities(Some(List()), Some(List(urlGroup3_1)), Some(List()))),
+      new Tweet("1970-03-08",
+                "Fourth test tweet",
+                new Entities(Some(List()), Some(List(urlGroup1_2)), Some(List()))),
+      new Tweet("1970-03-09",
+                "Fifth test tweet",
+                new Entities(Some(List()), Some(List(urlGroup4_1)), Some(List())))
+    )
+    val expected = List(
+      Map(urlGroup1_1.expanded_url -> 1),
+      Map(urlGroup2_1.expanded_url -> 1, urlGroup1_1.expanded_url -> 1),
+      Map(urlGroup2_1.expanded_url -> 1, urlGroup3_1.expanded_url -> 1, urlGroup1_1.expanded_url -> 1),
+      Map(urlGroup1_2.expanded_url -> 2, urlGroup2_1.expanded_url -> 1, urlGroup3_1.expanded_url -> 1),
+      Map(urlGroup1_2.expanded_url -> 2, urlGroup2_1.expanded_url -> 1, urlGroup3_1.expanded_url -> 1)
+    )
+    val result = returnProcessingResult(input).compile.toVector
+      .unsafeRunSync()
+      .toList
+      .map(_.topDomains)
+    result must beEqualTo(expected)
   }
 
   private[this] def validTimeSeries(l: List[Double]): Boolean =

@@ -16,6 +16,7 @@ case class AnalysisResult(totalTweets: Int,
                           tweetsPerHour: Double,
                           timeElapsed: Double,
                           topHashtags: Map[String, Int],
+                          topDomains: Map[String, Int],
                           percentageContainingUrl: Double,
                           percentageContainingPhotoUrl: Double)
 
@@ -44,6 +45,7 @@ object TweetProcessor {
                        tweetsPerSecond * 60 * 60,
                        a.timeElapsed,
                        retrieveTopPairs(b.topHashtags),
+                       Map[String, Int](),
                        urlPercentage,
                        photoUrlPercentage)
       })
