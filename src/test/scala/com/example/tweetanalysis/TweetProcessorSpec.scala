@@ -356,15 +356,17 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
   }
 
   private[this] def returnsTopUrlDomains(): MatchResult[List[Map[String, Int]]] = {
+    val domain1 = "thefirstdomain.com"
+    val domain2 = "domaintwo.com"
+    val domain3 = "forthisisdomainthree.org"
 
-    val urlGroup1_1 = TweetUrl("https://t.co/ayoo", "https://twitter.com/boom/bang/134/pow/all")
-    val urlGroup1_2 = TweetUrl("https://t.co/bleep", "https://twitter.com/bingbangboom")
+    val urlGroup1_1 = TweetUrl("https://t.co/ayoo", s"https://${domain1}/boom/bang/134/pow/all")
+    val urlGroup1_2 = TweetUrl("https://t.co/bleep", s"https://${domain1}/bingbangboom")
 
-    val urlGroup2_1 = TweetUrl("https://t.co/adsf", "https://boomboom.com/check_this_out.json")
+    val urlGroup2_1 = TweetUrl("https://t.co/adsf", s"https://${domain2}/check_this_out.json")
 
-    val urlGroup3_1 = TweetUrl("https://t.co/aaaa", "https://heyheyheyfatalbert.here/yep")
+    val urlGroup3_1 = TweetUrl("https://t.co/aaaa", s"https://${domain3}/yep")
 
-    val urlGroup4_1 = TweetUrl("https://t.co/hahaha", "https://fourthurl.com/more_laughing")
 
     val input = Stream(
       new Tweet("1970-01-01",
@@ -378,17 +380,13 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
                 new Entities(Some(List()), Some(List(urlGroup3_1)), Some(List()))),
       new Tweet("1970-03-08",
                 "Fourth test tweet",
-                new Entities(Some(List()), Some(List(urlGroup1_2)), Some(List()))),
-      new Tweet("1970-03-09",
-                "Fifth test tweet",
-                new Entities(Some(List()), Some(List(urlGroup4_1)), Some(List())))
+                new Entities(Some(List()), Some(List(urlGroup1_2)), Some(List())))
     )
     val expected = List(
-      Map(urlGroup1_1.expanded_url -> 1),
-      Map(urlGroup2_1.expanded_url -> 1, urlGroup1_1.expanded_url -> 1),
-      Map(urlGroup2_1.expanded_url -> 1, urlGroup3_1.expanded_url -> 1, urlGroup1_1.expanded_url -> 1),
-      Map(urlGroup1_2.expanded_url -> 2, urlGroup2_1.expanded_url -> 1, urlGroup3_1.expanded_url -> 1),
-      Map(urlGroup1_2.expanded_url -> 2, urlGroup2_1.expanded_url -> 1, urlGroup3_1.expanded_url -> 1)
+      Map(domain1 -> 1),
+      Map(domain2 -> 1, domain1 -> 1),
+      Map(domain2 -> 1, domain3 -> 1, domain1 -> 1),
+      Map(domain1 -> 2, domain2 -> 1, domain3 -> 1)
     )
     val result = returnProcessingResult(input).compile.toVector
       .unsafeRunSync()

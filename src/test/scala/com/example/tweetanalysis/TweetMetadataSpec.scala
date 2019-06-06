@@ -13,7 +13,7 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
       returnsCorrectHashtagList()
     }
     "handles empty hashtags" >> {
-      returnsEmptyListWhenNil()
+      returnsEmptyListWhenHashtagsEmpty()
     }
     "returns list of urls when urls are present" >> {
       returnsUrlTrueWhenUrlsPresent()
@@ -30,27 +30,37 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
     "ignores non-photo media urls" >> {
       ignoresNonPhotoMediaUrls()
     }
+    "returns correct domain list" >> {
+      returnsCorrectDomainList()
+    }
+    "handles empty domains" >> {
+      returnsEmptyListWhenUrlListEmpty()
+    }
+    "removes duplicate domains" >> {
+      removesDomainDuplicates()
+    }
   }
 
-  private[this] def returnsCorrectHashtagList(): MatchResult[List[Hashtag]] = {
-    val expectedHashtags = List[Hashtag](
+  private[this] def returnsCorrectHashtagList(): MatchResult[List[String]] = {
+    val inputHashtags = List[Hashtag](
       new Hashtag("first hashtag"),
       new Hashtag("second hashtag"),
       new Hashtag("third hashtag")
     )
+    val expected = inputHashtags.map(_.text)
 
     val inputTweet =
-      Tweet("1970-01-01", "text here", new Entities(Some(expectedHashtags), Some(List()), Some(List())))
-    TweetMetadata.get(inputTweet).hashtags must beEqualTo(expectedHashtags)
+      Tweet("1970-01-01", "text here", new Entities(Some(inputHashtags), Some(List()), Some(List())))
+    TweetMetadata.get(inputTweet).hashtags must beEqualTo(expected)
   }
 
-  private[this] def returnsEmptyListWhenNil(): MatchResult[List[Hashtag]] = {
+  private[this] def returnsEmptyListWhenHashtagsEmpty(): MatchResult[List[String]] = {
     val inputTweet = Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(List()), Some(List())))
-    TweetMetadata.get(inputTweet).hashtags must beEqualTo(List[Hashtag]())
+    TweetMetadata.get(inputTweet).hashtags must beEqualTo(List[String]())
   }
 
   private[this] def returnsUrlTrueWhenUrlsPresent(): MatchResult[List[TweetUrl]] = {
-      val expected = List(new TweetUrl("boom.com", "http://unwoundurl.com"), new TweetUrl("boom.org", "boomboom.org"))
+      val expected = List(new TweetUrl("boom.com", "http://unwoundurl.com"), new TweetUrl("boom.org", "http://boomboom.org"))
       val inputTweet = Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(expected), Some(List())))
       TweetMetadata.get(inputTweet).urls must beEqualTo(expected)
   }
@@ -84,8 +94,46 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
   }
 
   private[this] def handlesNoneValues(): MatchResult[Metadata] = {
-    val expected = Metadata(List(), List(), List())
+    val expected = Metadata(List(), List(), List(), List())
     val inputTweet = Tweet("1970-01-01", "text here", new Entities(None, None, None))
     TweetMetadata.get(inputTweet) must beEqualTo(expected)
+  }
+
+  private[this] def returnsCorrectDomainList(): MatchResult[List[String]] = {
+    val inputUrls = List(
+      new TweetUrl("https://t.co/asdfa", "https://firstdomain.org"),
+      new TweetUrl("https://t.co/aaaaa", "https://seconddomain.com")
+    )
+
+    val expected = List(
+        "firstdomain.org",
+        "seconddomain.com"
+    )
+
+    val inputTweet =
+      Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(inputUrls), Some(List())))
+    TweetMetadata.get(inputTweet).domains must beEqualTo(expected)
+  }
+
+  private[this] def removesDomainDuplicates(): MatchResult[List[String]] = {
+    val inputUrls = List(
+      new TweetUrl("https://t.co/bbbbb", "https://firstdomain.org"),
+      new TweetUrl("https://t.co/asdfa", "https://seconddomain.com"),
+      new TweetUrl("https://t.co/aaaaa", "https://seconddomain.com")
+    )
+
+    val expected = List(
+        "firstdomain.org",
+        "seconddomain.com"
+    )
+
+    val inputTweet =
+      Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(inputUrls), Some(List())))
+    TweetMetadata.get(inputTweet).domains must beEqualTo(expected)
+  }
+
+  private[this] def returnsEmptyListWhenUrlListEmpty(): MatchResult[List[String]] = {
+    val inputTweet = Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(List()), Some(List())))
+    TweetMetadata.get(inputTweet).domains must beEqualTo(List[String]())
   }
 }

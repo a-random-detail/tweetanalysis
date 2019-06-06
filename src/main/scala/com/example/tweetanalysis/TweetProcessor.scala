@@ -20,16 +20,17 @@ case class AnalysisResult(totalTweets: Int,
                           percentageContainingUrl: Double,
                           percentageContainingPhotoUrl: Double)
 
-case class ProcessedMetadata(topHashtags: Map[String, Int], hasUrls: Boolean, hasPhotoUrls: Boolean)
+case class ProcessedMetadata(topHashtags: Map[String, Int], topDomains: Map[String, Int], hasUrls: Boolean, hasPhotoUrls: Boolean)
 object TweetProcessor {
   def impl[F[_]: Sync]: TweetProcessor[F] = new TweetProcessor[F] {
     val startTime = LocalTime.now()
     def analyze(s: Stream[F, Tweet]): Stream[F, AnalysisResult] = {
       def metadata =
         s.map(TweetMetadata.get(_))
-          .scan(ProcessedMetadata(Map[String, Int](), false, false))((acc, next) => {
-            val nextMap = next.hashtags.groupBy(i => i.text).mapValues(_.size)
-            ProcessedMetadata(acc.topHashtags.combine(nextMap), next.urls.length > 0, next.photoUrls.length > 0)
+          .scan(ProcessedMetadata(Map[String, Int](), Map[String, Int](), false, false))((acc, next) => {
+            val hashtagMap = next.hashtags.groupBy(i => i).mapValues(_.size)
+            val domainMap = next.domains.groupBy(i => i).mapValues(_.size)
+            ProcessedMetadata(acc.topHashtags.combine(hashtagMap), acc.topDomains.combine(domainMap), next.urls.length > 0, next.photoUrls.length > 0)
           })
           .drop(1)
 
@@ -45,7 +46,7 @@ object TweetProcessor {
                        tweetsPerSecond * 60 * 60,
                        a.timeElapsed,
                        retrieveTopPairs(b.topHashtags),
-                       Map[String, Int](),
+                       retrieveTopPairs(b.topDomains),
                        urlPercentage,
                        photoUrlPercentage)
       })
