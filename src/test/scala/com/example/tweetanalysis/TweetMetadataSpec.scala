@@ -39,6 +39,12 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
     "removes duplicate domains" >> {
       removesDomainDuplicates()
     }
+    "returns list of distinct emojis" >> {
+      returnsListOfDistinctEmojisInText()
+    }
+    "returns no emojis when they are not in tweet text" >> {
+      returnsNoEmojisWhenNoneAreInTweetText()
+    }
   }
 
   private[this] def returnsCorrectHashtagList(): MatchResult[List[String]] = {
@@ -94,7 +100,7 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
   }
 
   private[this] def handlesNoneValues(): MatchResult[Metadata] = {
-    val expected = Metadata(List(), List(), List(), List())
+    val expected = Metadata(List(), List(), List(), List(), List())
     val inputTweet = Tweet("1970-01-01", "text here", new Entities(None, None, None))
     TweetMetadata.get(inputTweet) must beEqualTo(expected)
   }
@@ -135,5 +141,23 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
   private[this] def returnsEmptyListWhenUrlListEmpty(): MatchResult[List[String]] = {
     val inputTweet = Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(List()), Some(List())))
     TweetMetadata.get(inputTweet).domains must beEqualTo(List[String]())
+  }
+
+  private[this] def returnsListOfDistinctEmojisInText(): MatchResult[List[String]] = {
+    val expected = List(
+      "👨🏿‍🏫",
+      "👱🏽",
+      "👨🏼‍🍳",
+      "☔️",
+      "☂️",
+      "🤯"
+    )
+    val inputTweet = Tweet("1970-01-01", "👨🏿text👱🏽here👨🏼‍🍳with☔️emoji☂️🤯🤯🤯 🤯 🤯 🤯", new Entities(None, None, None))
+    TweetMetadata.get(inputTweet).emojiList must beEqualTo(expected)
+  }
+
+  private[this] def returnsNoEmojisWhenNoneAreInTweetText(): MatchResult[List[String]] = {
+    val inputTweet = Tweet("1970-01-01", "text here without emoji", new Entities(None, None, None))
+    TweetMetadata.get(inputTweet).emojiList must beEqualTo(List[String]())
   }
 }
