@@ -13,36 +13,47 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     "returns stream containing total tweet counts" >> {
       returnsCorrectStreamMappingForTotalTweets()
     }
+    
     "returns correct average tweets per second" >> {
       returnsCorrectTweetsPerSecond()
     }
+
     "returns average tweets per minute" >> {
       returnsTweetsPerMinute()
     }
+
     "returns tweetsPerMinute proportional to tweets per second" >> {
       returnsTweetsPerMinuteBasedOnSeconds()
     }
+
     "returns average tweets per hour" >> {
       returnsTweetsPerHour()
     }
+
     "returns tweetsPerHour proportional to tweets per second" >> {
       returnsTweetsPerHourBasedOnSeconds()
     }
+
     "returns top 3 hashtags sorted alphabetically for ties" >> {
       returnsTopHashtags()
     }
+
     "returns percent of tweets that contain a url" >> {
       returnsTweetsContainingUrlPercentages()
     }
+
     "returns percent of tweets that contain photo urls" >> {
       returnsPercentageOfTweetsContainingPhotoUrl()
     }
+
     "ignores non-photo media urls when accounting for percentage of tweets with photos" >> {
       ignoresNonPhotoMediaUrls()
     }
+
     "ignores photo media urls without indices" >> {
       ignoresMediaUrlsWithoutIndices()
     }
+
     "handles entities fields with a value of None" >> {
       canHandleNoneEntitiesFields()
     }
