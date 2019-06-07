@@ -13,7 +13,7 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     "returns stream containing total tweet counts" >> {
       returnsCorrectStreamMappingForTotalTweets()
     }
-    
+
     "returns correct average tweets per second" >> {
       returnsCorrectTweetsPerSecond()
     }
@@ -61,6 +61,10 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
     "returns top 3 url domains sorted alphabetically for ties" >> {
       returnsTopUrlDomains()
     }
+
+    "returns percent of tweets that contain emojis" >> {
+      returnsPercentageOfTweetsContainingEmojis()
+    }
   }
 
   private[this] def returnProcessingResult(
@@ -90,7 +94,7 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
                 new Entities(Some(List()),Some(List()), Some(List())))
     )
     val expectedOutput = Stream(1, 2, 3, 4, 5, 6)
-      .map(AnalysisResult(_, 0.0, 0.0, 0.0, 0.0, Map[String, Int](), Map[String, Int](), 0.0, 0.0))
+      .map(AnalysisResult(_, 0.0, 0.0, 0.0, 0.0, Map[String, Int](), Map[String, Int](), 0.0, 0.0, 0.0))
       .toList
       .map(x => x.totalTweets)
     val result = returnProcessingResult(input).compile.toVector
@@ -404,6 +408,24 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
       .toList
       .map(_.topDomains)
     result must beEqualTo(expected)
+  }
+
+  private[this] def returnsPercentageOfTweetsContainingEmojis(): MatchResult[List[Double]] = {
+    val input = Stream(
+      new Tweet("1970-03-09", "test tweet without emoji", new Entities(None, None, None)),
+      new Tweet("1970-03-09", "test tweet with emoji😘", new Entities(None, None, None)),
+      new Tweet("1970-03-09", "test tweet without emoji", new Entities(None, None, None)),
+      new Tweet("1970-03-09", "test tweet with emoji👩🏻‍🏫", new Entities(None, None, None)),
+      new Tweet("1970-03-09", "test tweet with emoji💆🏽‍♂️", new Entities(None, None, None)),
+      new Tweet("1970-03-09", "test tweet with emoji👌🏿", new Entities(None, None, None))
+    )
+    val expectedPercentages = List(0.00, 100.00, 50.00, 66.67, 75.00, 80.00)
+    val result = returnProcessingResult(input).compile.toVector
+      .unsafeRunSync()
+      .toList
+      .map(_.percentageContainingEmoji)
+
+      result must beEqualTo(expectedPercentages)
   }
 
   private[this] def validTimeSeries(l: List[Double]): Boolean =

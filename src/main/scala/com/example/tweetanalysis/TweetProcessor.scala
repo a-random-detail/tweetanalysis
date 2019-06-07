@@ -18,7 +18,9 @@ case class AnalysisResult(totalTweets: Int,
                           topHashtags: Map[String, Int],
                           topDomains: Map[String, Int],
                           percentageContainingUrl: Double,
-                          percentageContainingPhotoUrl: Double)
+                          percentageContainingPhotoUrl: Double,
+                          percentageContainingEmoji: Double
+                        )
 
 case class ProcessedMetadata(topHashtags: Map[String, Int], topDomains: Map[String, Int], hasUrls: Boolean, hasPhotoUrls: Boolean)
 object TweetProcessor {
@@ -48,7 +50,9 @@ object TweetProcessor {
                        retrieveTopPairs(b.topHashtags),
                        retrieveTopPairs(b.topDomains),
                        urlPercentage,
-                       photoUrlPercentage)
+                       photoUrlPercentage,
+                       0.0
+                     )
       })
     }
     private def roundPercentage(d: Double) = Math.round(d * 10000.0) / 100.0
