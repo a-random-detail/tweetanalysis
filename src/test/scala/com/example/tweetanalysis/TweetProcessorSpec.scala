@@ -416,7 +416,7 @@ class TweetProcessorSpec extends org.specs2.mutable.Specification {
       new Tweet("1970-03-09", "test tweet with emoji😘", new Entities(None, None, None)),
       new Tweet("1970-03-09", "test tweet without emoji", new Entities(None, None, None)),
       new Tweet("1970-03-09", "test tweet with emoji👩🏻‍🏫", new Entities(None, None, None)),
-      new Tweet("1970-03-09", "test tweet with emoji💆🏽‍♂️", new Entities(None, None, None)),
+      new Tweet("1970-03-09", "test tweet with emoji💆🏽‍", new Entities(None, None, None)),
       new Tweet("1970-03-09", "test tweet with emoji👌🏿", new Entities(None, None, None))
     )
     val expectedPercentages = List(0.00, 100.00, 50.00, 66.67, 75.00, 80.00)
