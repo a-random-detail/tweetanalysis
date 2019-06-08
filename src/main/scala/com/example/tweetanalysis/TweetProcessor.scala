@@ -17,25 +17,27 @@ case class AnalysisResult(totalTweets: Int,
                           timeElapsed: Double,
                           topHashtags: Map[String, Int],
                           topDomains: Map[String, Int],
+                          topEmojis: Map[String, Int],
                           percentageContainingUrl: Double,
                           percentageContainingPhotoUrl: Double,
                           percentageContainingEmoji: Double
                         )
 
-case class ProcessedMetadata(topHashtags: Map[String, Int], topDomains: Map[String, Int], hasUrls: Boolean, hasPhotoUrls: Boolean)
+case class ProcessedMetadata(topHashtags: Map[String, Int], topDomains: Map[String, Int], topEmojis: Map[String, Int], hasUrls: Boolean, hasPhotoUrls: Boolean, hasEmojis: Boolean)
 object TweetProcessor {
   def impl[F[_]: Sync]: TweetProcessor[F] = new TweetProcessor[F] {
     val startTime = LocalTime.now()
     val tweetMetadata = TweetMetadata.impl[F]
     val streamCounter = StreamCounter.impl[F](startTime)
-    
+
     def analyze(s: Stream[F, Tweet]): Stream[F, AnalysisResult] = {
       def metadata =
         s.map(tweetMetadata.get(_))
-          .scan(ProcessedMetadata(Map[String, Int](), Map[String, Int](), false, false))((acc, next) => {
+          .scan(ProcessedMetadata(Map(), Map(), Map(), false, false, false))((acc, next) => {
             val hashtagMap = next.hashtags.groupBy(i => i).mapValues(_.size)
             val domainMap = next.domains.groupBy(i => i).mapValues(_.size)
-            ProcessedMetadata(acc.topHashtags.combine(hashtagMap), acc.topDomains.combine(domainMap), next.urls.length > 0, next.photoUrls.length > 0)
+            val emojiMap = next.emojis.groupBy(i => i).mapValues(_.size)
+            ProcessedMetadata(acc.topHashtags.combine(hashtagMap), acc.topDomains.combine(domainMap), acc.topEmojis.combine(emojiMap), next.urls.length > 0, next.photoUrls.length > 0, next.emojis.length > 0)
           })
           .drop(1)
 
@@ -45,6 +47,8 @@ object TweetProcessor {
         val tweetsPerSecond = a.total.toDouble / a.timeElapsed
         val urlPercentage = roundPercentage(a.urlCount.toDouble / a.total.toDouble)
         val photoUrlPercentage = roundPercentage(a.photoUrlCount.toDouble / a.total.toDouble)
+        val emojiContainingPercentage = roundPercentage(a.emojiContainingCount.toDouble / a.total.toDouble)
+
         AnalysisResult(a.total,
                        tweetsPerSecond,
                        tweetsPerSecond * 60,
@@ -52,9 +56,10 @@ object TweetProcessor {
                        a.timeElapsed,
                        retrieveTopPairs(b.topHashtags),
                        retrieveTopPairs(b.topDomains),
+                       retrieveTopPairs(b.topEmojis),
                        urlPercentage,
                        photoUrlPercentage,
-                       0.0
+                       emojiContainingPercentage
                      )
       })
     }

@@ -8,7 +8,7 @@ trait TweetMetadata[F[_]] {
   def get(t: Tweet): Metadata
 }
 
-case class Metadata(hashtags: List[String], domains: List[String], urls: List[TweetUrl], photoUrls: List[MediaUrl], emojiList: List[String])
+case class Metadata(hashtags: List[String], domains: List[String], urls: List[TweetUrl], photoUrls: List[MediaUrl], emojis: List[String])
 object TweetMetadata {
   def impl[F[_]: Sync]: TweetMetadata[F] = new TweetMetadata[F] {
     val extractor = EmojiExtractor.impl[F]
