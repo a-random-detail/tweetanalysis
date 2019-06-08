@@ -47,6 +47,8 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
     }
   }
 
+  private[this] def returnsImplementation: TweetMetadata[IO] = TweetMetadata.impl[IO]
+
   private[this] def returnsCorrectHashtagList(): MatchResult[List[String]] = {
     val inputHashtags = List[Hashtag](
       new Hashtag("first hashtag"),
@@ -57,52 +59,52 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
 
     val inputTweet =
       Tweet("1970-01-01", "text here", new Entities(Some(inputHashtags), Some(List()), Some(List())))
-    TweetMetadata.get(inputTweet).hashtags must beEqualTo(expected)
+    returnsImplementation.get(inputTweet).hashtags must beEqualTo(expected)
   }
 
   private[this] def returnsEmptyListWhenHashtagsEmpty(): MatchResult[List[String]] = {
     val inputTweet = Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(List()), Some(List())))
-    TweetMetadata.get(inputTweet).hashtags must beEqualTo(List[String]())
+    returnsImplementation.get(inputTweet).hashtags must beEqualTo(List[String]())
   }
 
   private[this] def returnsUrlTrueWhenUrlsPresent(): MatchResult[List[TweetUrl]] = {
       val expected = List(new TweetUrl("boom.com", "http://unwoundurl.com"), new TweetUrl("boom.org", "http://boomboom.org"))
       val inputTweet = Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(expected), Some(List())))
-      TweetMetadata.get(inputTweet).urls must beEqualTo(expected)
+      returnsImplementation.get(inputTweet).urls must beEqualTo(expected)
   }
 
   private[this] def returnsUrlFalseWhenNoUrlsPresent(): MatchResult[List[TweetUrl]] = {
       val inputTweet = Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(List()), Some(List())))
-      TweetMetadata.get(inputTweet).urls must beEqualTo(List())
+      returnsImplementation.get(inputTweet).urls must beEqualTo(List())
   }
 
   private[this] def returnsUrlTrueWhenMediaUrlsPresent(): MatchResult[List[MediaUrl]] = {
       val expected = List(new MediaUrl("boom.com", "photo", List(2,14)), new MediaUrl("boom.org","photo", List(12, 24)))
       val inputTweet = Tweet("1970-01-01", "text here", new Entities(Some(List()),Some(List()),Some(expected)))
-      TweetMetadata.get(inputTweet).photoUrls must beEqualTo(expected)
+      returnsImplementation.get(inputTweet).photoUrls must beEqualTo(expected)
   }
 
   private[this] def returnsUrlFalseWhenNoMediaUrlsPresent(): MatchResult[List[MediaUrl]] = {
       val inputTweet = Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(List()), Some(List())))
-      TweetMetadata.get(inputTweet).photoUrls must beEqualTo(List())
+      returnsImplementation.get(inputTweet).photoUrls must beEqualTo(List())
   }
 
   private[this] def ignoresNonPhotoMediaUrls(): MatchResult[List[MediaUrl]] = {
     val shouldNotShowUp = List(new MediaUrl("do not see this", "video", List(2,22)), new MediaUrl("do not see this either", "animated_gif", List(1, 34)))
       val inputTweet = Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(List()), Some(shouldNotShowUp)))
-      TweetMetadata.get(inputTweet).photoUrls must beEqualTo(List())
+      returnsImplementation.get(inputTweet).photoUrls must beEqualTo(List())
   }
 
   private[this] def ignoresMediaUrlsWithoutIndices(): MatchResult[List[MediaUrl]] = {
       val shouldNotShowUp = List(new MediaUrl("do not see this", "video", List()), new MediaUrl("do not see this either", "animated_gif", List()))
       val inputTweet = Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(List()), Some(shouldNotShowUp)))
-      TweetMetadata.get(inputTweet).photoUrls must beEqualTo(List())
+      returnsImplementation.get(inputTweet).photoUrls must beEqualTo(List())
   }
 
   private[this] def handlesNoneValues(): MatchResult[Metadata] = {
     val expected = Metadata(List(), List(), List(), List(), List())
     val inputTweet = Tweet("1970-01-01", "text here", new Entities(None, None, None))
-    TweetMetadata.get(inputTweet) must beEqualTo(expected)
+    returnsImplementation.get(inputTweet) must beEqualTo(expected)
   }
 
   private[this] def returnsCorrectDomainList(): MatchResult[List[String]] = {
@@ -118,7 +120,7 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
 
     val inputTweet =
       Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(inputUrls), Some(List())))
-    TweetMetadata.get(inputTweet).domains must beEqualTo(expected)
+    returnsImplementation.get(inputTweet).domains must beEqualTo(expected)
   }
 
   private[this] def removesDomainDuplicates(): MatchResult[List[String]] = {
@@ -135,12 +137,12 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
 
     val inputTweet =
       Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(inputUrls), Some(List())))
-    TweetMetadata.get(inputTweet).domains must beEqualTo(expected)
+    returnsImplementation.get(inputTweet).domains must beEqualTo(expected)
   }
 
   private[this] def returnsEmptyListWhenUrlListEmpty(): MatchResult[List[String]] = {
     val inputTweet = Tweet("1970-01-01", "text here", new Entities(Some(List()), Some(List()), Some(List())))
-    TweetMetadata.get(inputTweet).domains must beEqualTo(List[String]())
+    returnsImplementation.get(inputTweet).domains must beEqualTo(List[String]())
   }
 
   private[this] def returnsListOfDistinctEmojisInText(): MatchResult[List[String]] = {
@@ -153,11 +155,11 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
       "🤯"
     )
     val inputTweet = Tweet("1970-01-01", "👨🏿text👱🏽here👨🏼‍🍳with☔️emoji☂️🤯🤯🤯 🤯 🤯 🤯", new Entities(None, None, None))
-    TweetMetadata.get(inputTweet).emojiList must beEqualTo(expected)
+    returnsImplementation.get(inputTweet).emojiList must beEqualTo(expected)
   }
 
   private[this] def returnsNoEmojisWhenNoneAreInTweetText(): MatchResult[List[String]] = {
     val inputTweet = Tweet("1970-01-01", "text here without emoji", new Entities(None, None, None))
-    TweetMetadata.get(inputTweet).emojiList must beEqualTo(List[String]())
+    returnsImplementation.get(inputTweet).emojiList must beEqualTo(List[String]())
   }
 }

@@ -26,9 +26,12 @@ case class ProcessedMetadata(topHashtags: Map[String, Int], topDomains: Map[Stri
 object TweetProcessor {
   def impl[F[_]: Sync]: TweetProcessor[F] = new TweetProcessor[F] {
     val startTime = LocalTime.now()
+    val tweetMetadata = TweetMetadata.impl[F]
+    val streamCounter = StreamCounter.impl[F](startTime)
+    
     def analyze(s: Stream[F, Tweet]): Stream[F, AnalysisResult] = {
       def metadata =
-        s.map(TweetMetadata.get(_))
+        s.map(tweetMetadata.get(_))
           .scan(ProcessedMetadata(Map[String, Int](), Map[String, Int](), false, false))((acc, next) => {
             val hashtagMap = next.hashtags.groupBy(i => i).mapValues(_.size)
             val domainMap = next.domains.groupBy(i => i).mapValues(_.size)
