@@ -38,7 +38,8 @@ object EmojiExtractor {
     def composeNextEmoji(text: String, emojiPrefixes: List[String], common: String = ""): String = (text, emojiPrefixes) match {
       case ("", _) => common
       case (_, List()) => common
-      case (t, x :: xs) => composeNextEmoji(t, xs, x)
+      case (t, x :: xs) if t.startsWith(x) => composeNextEmoji(t, xs, x)
+      case _ => common
     }
 
   }

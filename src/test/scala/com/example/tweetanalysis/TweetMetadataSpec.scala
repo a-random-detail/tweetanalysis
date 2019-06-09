@@ -9,39 +9,51 @@ import fs2.Stream
 class TweetMetadataSpec extends org.specs2.mutable.Specification {
 
   "TweetMetadata" >> {
+
     "returns correct hashtag list" >> {
       returnsCorrectHashtagList()
     }
+
     "handles empty hashtags" >> {
       returnsEmptyListWhenHashtagsEmpty()
     }
+
     "returns list of urls when urls are present" >> {
       returnsUrlTrueWhenUrlsPresent()
     }
+
     "returns empty list of urls whenn urls are missing" >> {
       returnsUrlFalseWhenNoUrlsPresent()
     }
+
     "returns list of media urls when present" >> {
       returnsUrlTrueWhenMediaUrlsPresent()
     }
+
     "returns empty list of media urls when media urls are missing" >> {
       returnsUrlFalseWhenNoMediaUrlsPresent()
     }
+
     "ignores non-photo media urls" >> {
       ignoresNonPhotoMediaUrls()
     }
+
     "returns correct domain list" >> {
       returnsCorrectDomainList()
     }
+
     "handles empty domains" >> {
       returnsEmptyListWhenUrlListEmpty()
     }
+
     "removes duplicate domains" >> {
       removesDomainDuplicates()
     }
-    // "returns list of distinct emojis" >> {
-    //   returnsListOfDistinctEmojisInText()
-    // }
+
+    "returns list of distinct emojis" >> {
+      returnsListOfDistinctEmojisInText()
+    }
+
     "returns no emojis when they are not in tweet text" >> {
       returnsNoEmojisWhenNoneAreInTweetText()
     }
@@ -147,12 +159,13 @@ class TweetMetadataSpec extends org.specs2.mutable.Specification {
 
   private[this] def returnsListOfDistinctEmojisInText(): MatchResult[List[String]] = {
     val expected = List(
+      "👨🏿",
       "👱🏽",
       "☔️",
       "☂️",
       "🤯"
     )
-    val inputTweet = Tweet("1970-01-01", "👨🏿text👱🏽here with☔️emoji☂️🤯🤯🤯 🤯 🤯 🤯", new Entities(None, None, None))
+    val inputTweet = Tweet("1970-01-01", "👨🏿text👱🏽here with☔️emoji☂️ 🤯 🤯 🤯", new Entities(None, None, None))
     returnsImplementation.get(inputTweet).emojis must beEqualTo(expected)
   }
 

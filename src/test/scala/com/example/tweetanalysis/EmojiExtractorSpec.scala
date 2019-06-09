@@ -19,6 +19,18 @@ class EmojiExtractorSpec extends org.specs2.mutable.Specification {
     "does not decompose complex emojis - fitzpatrick modifier" >> {
       fitzpatrickModifierIsNotSplitOut()
     }
+    "counts emojis separately when more than one are in text" >> {
+      countsEmojisSeparately()
+    }
+    "counts emojis separately when they are separated by whitespace" >> {
+      countsEmojisSeparatelyWhenSplitWithWhitespace()
+    }
+    // "counts non-modifying emojis as separate" >> {
+    //   countsNonModifyingEmojisAsSeparate()
+    // }
+    "does not count duplicates" >> {
+      doesNotCountDuplicates()
+    }
   }
 
   private[this] def returnImplementation: EmojiExtractor[IO] = EmojiExtractor.impl[IO]
@@ -37,5 +49,26 @@ class EmojiExtractorSpec extends org.specs2.mutable.Specification {
     val inputText = "check out this emoji with a fitzpatrick modifier👌🏿"
     returnImplementation.extractEmojis(inputText) must beEqualTo(List("👌🏿"))
   }
+
+  private[this] def countsEmojisSeparately(): MatchResult[List[String]] = {
+    val inputText = "check out 👿these emojis separated by text and whitespace🥰"
+    returnImplementation.extractEmojis(inputText) must beEqualTo(List("👿","🥰"))
+  }
+
+  private[this] def countsEmojisSeparatelyWhenSplitWithWhitespace(): MatchResult[List[String]] = {
+    val inputText = "👿 🥰"
+    returnImplementation.extractEmojis(inputText) must beEqualTo(List("👿","🥰"))
+  }
+
+  private[this] def countsNonModifyingEmojisAsSeparate(): MatchResult[List[String]] = {
+    val inputText = "👿🥰"
+    returnImplementation.extractEmojis(inputText) must beEqualTo(List("👿","🥰"))
+  }
+  
+  private[this] def doesNotCountDuplicates(): MatchResult[List[String]] = {
+    val inputText = "🥰 🥰 🥰"
+    returnImplementation.extractEmojis(inputText) must beEqualTo(List("🥰"))
+  }
+
 
 }
